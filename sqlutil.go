@@ -11,7 +11,19 @@ import (
 
 var ColumnNameToFieldName func(string) string = SnakeToUpperCamel
 
-// 查询单条数据
+// One 查询单条数据
+//使用需知:
+// 查询行数据 例如:select username,workspaceid from user
+//	type user struct{
+//	Username string  --> 字段第一个大写,其他小写
+//	Workspaceid int
+//	}
+// protobuf
+// 如果是 Protobuf 协议数据字段小写
+// message user{
+// 	string username =1;
+// 	int32 workspaceid =2;
+// }
 func One(out interface{}, rows *sql.Rows) (err error) {
 	defer rows.Close()
 
@@ -87,7 +99,9 @@ func ScanRow(rowValue reflect.Value, rows *sql.Rows) (err error) {
 		if !value.Elem().IsValid() {
 			continue
 		}
-		field := rowValue.Elem().FieldByName(ColumnNameToFieldName(key))
+
+		fileName := ColumnNameToFieldName(key)
+		field := rowValue.Elem().FieldByName(fileName)
 		if field.IsValid() {
 			SetModelValue(value, field)
 		}
