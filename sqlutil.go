@@ -1,3 +1,17 @@
+// Copyright 2016 The laik Authors. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License"): you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
+// under the License.
+
 package utils
 
 import (
@@ -100,8 +114,8 @@ func ScanRow(rowValue reflect.Value, rows *sql.Rows) (err error) {
 			continue
 		}
 
-		fileName := ColumnNameToFieldName(key)
-		field := rowValue.Elem().FieldByName(fileName)
+		filedName := ColumnNameToFieldName(key)
+		field := rowValue.Elem().FieldByName(filedName)
 		if field.IsValid() {
 			SetModelValue(value, field)
 		}
@@ -109,16 +123,19 @@ func ScanRow(rowValue reflect.Value, rows *sql.Rows) (err error) {
 	return
 }
 
-// 通过反射设置单个元素的值
+// SetModelValue 通过反射设置单个元素的值
 func SetModelValue(driverValue, fieldValue reflect.Value) error {
 	fieldType := fieldValue.Type()
+
 	switch fieldType.Kind() {
 	case reflect.Bool:
 		if driverValue.Elem().Int() != 0 {
 			fieldValue.Set(reflect.ValueOf(true))
 		}
+
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		fieldValue.SetInt(driverValue.Elem().Int())
+
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		switch driverValue.Elem().Kind() {
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
@@ -126,14 +143,18 @@ func SetModelValue(driverValue, fieldValue reflect.Value) error {
 		default:
 			fieldValue.SetUint(driverValue.Elem().Uint())
 		}
+
 	case reflect.Float32, reflect.Float64:
 		fieldValue.SetFloat(driverValue.Elem().Float())
+
 	case reflect.String:
 		fieldValue.SetString(string(driverValue.Elem().String()))
+
 	case reflect.Slice:
 		if reflect.TypeOf(driverValue.Interface()).Elem().Kind() == reflect.Uint8 {
 			fieldValue.SetBytes(driverValue.Elem().Bytes())
 		}
+
 	case reflect.Struct:
 		if fieldType == reflect.TypeOf(time.Time{}) {
 			fieldValue.Set(driverValue.Elem())
